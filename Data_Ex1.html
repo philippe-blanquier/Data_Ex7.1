@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+        <!-- Do not cache this web page -->
+        <meta http-equiv= "cache-control" content= "no-cache, no-store, must-revalidate"> <!-- for HTTP 1.1 -->
+        <meta http-equiv= "pragma" content= "no-cache"> <!-- for HTTP 1.0 -->
+        <meta http-equiv= "expires" content= "0"> <!-- for proxies -->
+        <!-- Go on -->
+        <title>JSON Data</title>
+		<meta charset="UTF-8">
+		<!-- Test JavaScript -->
+		<noscript>Your browser does not support Javascript.</noscript>
+	    <!-- Import BootStrap CSS & JS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+		<!-- Import JQuery library -->
+        <script  type="text/javascript" src="jquery-3.6.0.min.js"></script>
+        <script type="text/javascript" src="math.js"></script>
+        <!-- Import my CSS file -->
+        <link rel="stylesheet" type="text/css" href="Data_Ex1.css">
+    </head>
+	<body>
+        <p id="inputFileName">
+            <label for="tagFileId"> Select a JSON movies file: </label>
+            <input type="file" onchange="readJsonFile(this)">
+        </p>
+        <div id="autoFillId">
+        </div>
+        <script>
+            let movieRecordCounter= 0;
+            let rowId="0";
+            let reader= null;
+            // The max displayed column depends of the screen size
+            let maxDisplayColum= 4;
+
+            /*
+            function resize() 
+            {
+                console.log("resize(): new screen height: ", window.innerHeight, "px");
+                console.log("resize(): new screen width: ", window.innerWidth, "px");
+                let rootId = document.querySelector(':root');
+                maxDisplayColum= getComputedStyle(rootId).getPropertyValue('--columNbMax');
+                console.log(`resize(): maxDisplayColum: ${maxDisplayColum}`);
+                if (reader != null)
+                {
+                    // Redraw !
+                    $('#autoFillId').empty(); 
+                    $('body').append(`<div id="autoFillId"></div>`); 
+                    json2Js(reader.result);
+                }
+            }
+            window.onresize = resize;
+            */
+
+            function readJsonFile(inObj)
+            {
+                // remove the input file name 
+                $('#inputFileName').empty();
+                // Retreive the JSON file name
+                let tagFileId= inObj.files[0];
+                // Do somme initialisation
+                let reader= new FileReader();
+                reader.onload= function( event) {   
+                                                json2Js(reader.result);
+                                                };
+                reader.onerror= function()  {
+                                            alert( reader.error);
+                                            }
+                // Read & display the file on screen
+                reader.readAsText(tagFileId, "UTF-8");
+            }
+            function json2Js(data)
+            {
+                let movieFilledId="movieLibraryId";
+                // Add the movie library header
+                $('#autoFillId').append(`<div class="container-fluid bg-light" Id=${movieFilledId}>`); 
+                // Translate JSON to JS data format
+                let jsObj = JSON.parse(data);
+                addMovieHeader(movieFilledId, "The Manu Movie DataBase - TMMDB");
+                // jsObj.results= 0..n {"id": xxx, "original_title": xxx, "overview": xxx, "poster_path": xxx, "vote_average": xxx}
+                jsObj.results.forEach( movieInfo =>{ addOneJsRecord ( movieFilledId
+                                                                    , movieInfo.id
+                                                                    , movieInfo.original_title
+                                                                    , movieInfo.overview
+                                                                    , movieInfo.poster_path
+                                                                    , movieInfo.vote_average
+                                                                    )
+                                                    }
+                                     )
+                $('#autoFillId').append('</div>');
+            }
+            function addMovieHeader( movieLibraryId, headerTitle)
+            {
+                let message;
+                message= '<div class="row" id="RowHeader"';
+                    message+='<div class="col-12">';
+                        message+= `<p class="text-center fw-bold" style="font-size:2vw">${headerTitle}</p>`;
+                    message+= "</div>";
+                message+= "</div>";
+                $(`#${movieLibraryId}`).append(message); 
+            }
+            function computeCommentSize( imgId, titleId, starId)
+            {
+                /*  To get the width and height of an element in Javascript:
+                    Get the element itself first – var element = document.getElementById("ID");
+                    Then, there are 3 different sets of dimensions.
+                        element.clientWidth and element.clientHeight – Refers to the dimensions of the element, inclusive of the padding.
+                        element.offsetWidth and element.offsetHeight – Refers to the dimensions of the element, inclusive of the padding and border.
+                        element.scrollWidth and element.scrollHeight – Refers to the “total inner dimensions” of the element if it has scrollbars. 
+                */
+                let imgHeight= document.getElementById(`${imgId}`).offsetHeight;
+                let titleHeight= document.getElementById(`${titleId}`).offsetHeight;
+                let starHeight= document.getElementById(`${starId}`).offsetHeight; 
+                // Get font size like '16px' --> 16
+                let currentFontHeight= parseFloat(window.getComputedStyle(document.getElementById(`${titleId}`), null).getPropertyValue('font-size'));
+                let answer= Math.floor((imgHeight - titleHeight - starHeight)/currentFontHeight);
+                // debug
+                console.log(`${imgId} imgHeight= ${imgHeight}`);
+                console.log(`${titleId} titleHeight= ${titleHeight}`);
+                console.log(`${starId} starHeight= ${starHeight}`);
+                console.log(`currentFontHeight= ${currentFontHeight}`);
+                console.log(`answer= ${answer}`);
+                return answer;
+            }
+            function addStarsAsNotation( notation)
+            {
+                let answer= ""
+                  , starImg
+                  , noteOn5= Math.min(notation/2, 5.0) // note on 10 --> 0 .. 5
+                  , imgSize=10;
+                for (let idx=1; idx <=5; idx++)
+                {
+                    startImg= (noteOn5 >= 1) ? "Star4.4_33x33.gif" : (noteOn5 >= 0.75) ? "Star3.4_33x33.gif" : (noteOn5 >= 0.5) ? "Star2.4_33x33.gif" : (noteOn5 >= 0.25) ? "Star1.4_33x33.gif" : "Star0.4_33x33.gif";
+                    answer+=`<div class="col-2"><img src=${startImg}></div>`;
+                    noteOn5 -= 1;
+                }
+                return answer;
+            }
+            function addOneJsRecord( movieLibraryId, mId, mOriginalTitle, mOverview, mPosterPath, mVoteAverage)
+            {
+                // Append the new row if neccessary
+                if (movieRecordCounter % maxDisplayColum == 0)
+                {
+                    let rowNum=  movieRecordCounter / maxDisplayColum;
+                    rowId=`Row${rowNum}`;
+                    $(`#${movieLibraryId}`).append(`<div class="row" id="${rowId}">`);   
+                }
+                // start the new movie info
+                let msgContent;
+                let movieNbId=`mId${mId}`;
+                let movieSubId=`sub${mId}`;
+                let movieStarId=`star${mId}`;
+                let movieTitleId=`title${mId}`;
+                let movieTextId=`text${mId}`;
+                let moviePosterId=`poster${mId}`;
+                let commentSize;
+                $(`#${rowId}`).append(`<div class="col-3" id=${movieNbId}>`);
+                    // Divide the movie enplacement into 2 columns
+                    $(`#${movieNbId}`).append(`<div class="row" id=${movieSubId}>`);  
+                        // Poster on frist column
+                        msgContent= `<div class="col"><img id=${moviePosterId} src=${mPosterPath} alt="poster" width="100%" heigth=auto title=${mOriginalTitle}></div>`;
+                        // Title + Comment + Stars on second column
+                        msgContent+= `<div class="col">`;
+                            msgContent+= `<div class="row"><label id=${movieTitleId} class="fw-bold">${mOriginalTitle}</label></div>`;
+                            msgContent+= `<div class="row"><textarea id=${movieTextId} rows=3" style="width:100%">${mOverview}</textarea></div>`;
+                            msgContent+= `<div class="row" id=${movieStarId}>`+ addStarsAsNotation( mVoteAverage)+"</div>"; 
+                        msgContent+= '</div>';
+                        // Content done !
+                        $(`#${movieSubId}`).append(msgContent);
+                        // Adjust the textarea rows number
+                        $(`#${movieTextId}`).rows= computeCommentSize( movieSubId, movieTitleId, movieStarId);
+                    $(`#${movieNbId}`).append('</div>');  
+                $(`#${rowId}`).append('</div>'); 
+                // Close the row if neccessary
+                if (movieRecordCounter % maxDisplayColum == 0)
+                {
+                    $(`#${movieLibraryId}`).append('</div><br>');  
+                }
+                // Done for this movie item
+                movieRecordCounter += 1;
+            }
+         </script>
+    </body>
+</html>

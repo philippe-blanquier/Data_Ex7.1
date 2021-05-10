@@ -1,0 +1,37 @@
+/*
+ * CSS file
+ */
+ /* Reset CSS, be sure to have the same behavior whatever is the browser */
+*{
+	margin: 0px;
+	padding: 1px;
+	font-family: Avenir, sans-serif;
+}
+@media screen and (max-width: 800px)
+{ 
+	:root
+	{
+		--columNbMax: 1;
+	}
+}
+@media screen and (min-width: 801px)
+{ 
+	:root
+	{
+		--columNbMax: 2;
+	}
+}
+@media screen and (min-width: 1300px)
+{ 
+	:root
+	{
+		--columNbMax: 3;
+	}
+}
+@media screen and (min-width: 1801px)
+{ 
+	:root
+	{
+		--columNbMax: 4;
+	}
+}
