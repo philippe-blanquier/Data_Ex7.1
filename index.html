@@ -56,17 +56,18 @@
 
             function json2Js(data)
             {
-                console.log("json2Js(): input data");
-                console.info(data);
+                // Translate JSON to JS data format
+                let jsObj= JSON.parse(data);
+                //console.info(data);
                 let movieFilledId="movieLibraryId";
                 // Add the movie library header
                 $('#autoFillId').append(`<div class="container-fluid bg-light" Id=${movieFilledId}>`); 
-                // Translate JSON to JS data format
-                let jsObj= JSON.parse(data);
-
+                // start
                 addMovieHeader(movieFilledId, "The Manu Movie DataBase - TMMDB");
-                // jsObj.results= 0..n {"id": xxx, "original_title": xxx, "overview": xxx, "poster_path": xxx, "vote_average": xxx}
-                jsObj.results.forEach( movieInfo =>{ addOneJsRecord ( movieFilledId
+                // All movies inside only one row !
+                $(`#${movieFilledId}`).append(`<div class="row" id="OnlyOneRow">`);   
+                 // jsObj.results= 0..n {"id": xxx, "original_title": xxx, "overview": xxx, "poster_path": xxx, "vote_average": xxx}
+                jsObj.results.forEach( movieInfo =>{ addOneJsRecord ( "OnlyOneRow"
                                                                     , movieInfo.id
                                                                     , movieInfo.original_title
                                                                     , movieInfo.overview
@@ -75,6 +76,9 @@
                                                                     )
                                                     }
                                      )
+                // close our movies display
+                $(`#${movieLibraryId}`).append('</div>'); 
+                // close the container
                 $('#autoFillId').append('</div>');
             }
             function addMovieHeader( movieLibraryId, headerTitle)
@@ -102,12 +106,6 @@
                 // Get font size like '16px' --> 16
                 let currentFontHeight= parseFloat(window.getComputedStyle(document.getElementById(`${titleId}`), null).getPropertyValue('font-size'));
                 let answer= Math.floor((imgHeight - titleHeight - starHeight)/currentFontHeight);
-                // debug
-                console.log(`${imgId} imgHeight= ${imgHeight}`);
-                console.log(`${titleId} titleHeight= ${titleHeight}`);
-                console.log(`${starId} starHeight= ${starHeight}`);
-                console.log(`currentFontHeight= ${currentFontHeight}`);
-                console.log(`answer= ${answer}`);
                 return answer;
             }
             function addStarsAsNotation( notation)
@@ -130,13 +128,6 @@
             }
             function addOneJsRecord( movieLibraryId, mId, mOriginalTitle, mOverview, mPosterPath, mVoteAverage)
             {
-                // Append the new row if neccessary
-                if (movieRecordCounter % maxDisplayColum == 0)
-                {
-                    let rowNum=  movieRecordCounter / maxDisplayColum;
-                    rowId=`Row${rowNum}`;
-                    $(`#${movieLibraryId}`).append(`<div class="row" id="${rowId}">`);   
-                }
                 // start the new movie info
                 let msgContent;
                 let movieNbId=`mId${mId}`;
@@ -146,7 +137,16 @@
                 let movieTextId=`text${mId}`;
                 let moviePosterId=`poster${mId}`;
                 let commentSize;
-                $(`#${rowId}`).append(`<div class="col-3" id=${movieNbId}>`);
+                /* https://stackoverflow.com/questions/19865158/what-is-the-difference-among-col-lg-col-md-and-col-sm-in-bootstrap
+                   In Bootstrap 5 (alpha) there is a new -xxl- size:
+                        col-* - 0 (xs)
+                        col-sm-* - 576px and up
+                        col-md-* - 768px and up
+                        col-lg-* - 992px and up
+                        col-xl-* - 1200px and up
+                        col-xxl-* - 1400px and up
+                */
+                $(`#${movieLibraryId}`).append(`<div class="col-12 col-sm-6 col-md-4 col-lg-3" id=${movieNbId}>`);
                     // Divide the movie enplacement into 2 columns
                     $(`#${movieNbId}`).append(`<div class="row" id=${movieSubId}>`);  
                         // Poster on frist column
@@ -160,14 +160,9 @@
                         // Content done !
                         $(`#${movieSubId}`).append(msgContent);
                         // Adjust the textarea rows number
-                        //$(`#${movieTextId}`).rows= computeCommentSize( movieSubId, movieTitleId, movieStarId);
+                        $(`#${movieTextId}`).rows= computeCommentSize( movieSubId, movieTitleId, movieStarId);
                     $(`#${movieNbId}`).append('</div>');  
-                $(`#${rowId}`).append('</div>'); 
-                // Close the row if neccessary
-                if (movieRecordCounter % maxDisplayColum == 0)
-                {
-                    $(`#${movieLibraryId}`).append('</div><br>');  
-                }
+                $(`#${movieLibraryId}`).append('</div>'); 
                 // Done for this movie item
                 movieRecordCounter += 1;
             }
